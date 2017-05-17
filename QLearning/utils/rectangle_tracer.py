@@ -35,6 +35,6 @@ class RectangleTracer:
          nextCellIdx = 0
          newSideLen += 1
 
-      return blockCoord, nextCellIdx, newSideLen
+      return newSideLen, nextCellIdx, blockCoord
 
 

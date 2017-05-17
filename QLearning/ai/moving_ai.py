@@ -1,12 +1,11 @@
-import numpy as np
 import RL
+import numpy as np
 
-class MouseAI:
+class MovingAI:
 
-   def __init__(self, agent, cheese):
+   def __init__(self, agent):
 
       self.agent = agent
-      self.cheese = cheese
 
       self.directions = [
          np.array([1, -1]), 
@@ -18,8 +17,6 @@ class MouseAI:
          np.array([0, -1]), 
          np.array([0, 0]),
          np.array([0, 1])]
-
-      self.goalReachedListener = None
 
       self.ai = RL.QLearn(numActions=len(self.directions), alpha=0.1, gamma=0.9)
       self.prevState = None
@@ -38,15 +35,15 @@ class MouseAI:
    def setTrainingMode(self):
       self.isLearning = False
 
+   def goInDirection(self, directionIdx, scene):
+      newPos = self.agent.getPos() + self.directions[directionIdx]
+      validNewPos = scene.wrapCoordinates(newPos)
+      self.agent.setPos(validNewPos)
+
    def think(self, scene):
-      currState = self.calcState()
-      reward = -1
-
-      if (self.agent.getPos() == self.cheese.getPos()).all():
-         reward = 50
-         self.cheese.setPos(scene.pickRandomLocation())
-         self.onGoalReached()
-
+      currState = self.calculateState(scene)
+      reward = self.calculateReward(scene)
+      
       if self.isLearning:
          if self.prevState is not None:
             self.ai.learn(self.prevState, self.prevAction, currState, reward)
@@ -60,27 +57,8 @@ class MouseAI:
 
       self.goInDirection(action, scene)
 
-   def calcState(self):
+   def calculateState(self, scene):
+      return 0
 
-      dirToCheese = np.sign(self.cheese.getPos() - self.agent.getPos())
-
-      for state in range(len(self.directions)):
-         if (self.directions[state] == dirToCheese).all():
-            return state
-
-      return None
-
-   def goInDirection(self, directionIdx, scene):
-         newPos = self.agent.getPos() + self.directions[directionIdx]
-         validNewPos = scene.wrapCoordinates(newPos)
-         if scene.isPositionOccupied(validNewPos) == False:
-            self.agent.setPos(validNewPos)
-
-   def setGoalReachedListener(self, listener):
-      self.goalReachedListener = listener
-
-   def onGoalReached(self):
-
-      if self.goalReachedListener is not None:
-         self.goalReachedListener()
-
+   def calculateReward(self, scene):
+      return -1

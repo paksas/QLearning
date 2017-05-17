@@ -4,7 +4,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>5c78b782-78ef-4175-aa6e-c2e1b78e0d93</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>main.py</StartupFile>
+    <StartupFile>eye_sight_ai.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
@@ -23,16 +23,26 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="agents\mouse_ai.py">
+    <Compile Include="agents\moving_ai.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="agents\__init__.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="main.py">
+    <Compile Include="ai\eyesight.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="QLearning.py" />
+    <Compile Include="ai\moving_ai.py" />
+    <Compile Include="ai\smell.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ai\__init__.py" />
+    <Compile Include="directional_ai.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="eye_sight_ai.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="RL\qlearn.py">
       <SubType>Code</SubType>
     </Compile>
@@ -43,6 +53,12 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="utils\efficiency_plot.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="utils\math.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="utils\rectangle.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="utils\rectangle_tracer.py">
@@ -77,7 +93,8 @@
     <InterpreterReference Include="Global|ContinuumAnalytics|Anaconda36-64" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="agents\" />
+    <Folder Include="ai\" />
+    <Folder Include="ai\" />
     <Folder Include="RL\" />
     <Folder Include="utils\" />
     <Folder Include="world\" />

@@ -5,10 +5,11 @@ import numpy as np
 
 class World:
 
-   def __init__(self, cellSize, resources):
+   def __init__(self, cellSize, resources, walkableCellId = '_'):
 
       self.cellSize = cellSize
       self.mappingsDict = resources
+      self.walkableCellId = walkableCellId
 
       self.unoccupiedSpaceTracer = utils.RectangleTracer()
 
@@ -25,13 +26,16 @@ class World:
       self.agents.append(agent)
       return self
 
+   def getAgents(self):
+      return self.agents
+
    def loadLevel(self, mapStr):
 
       buf = io.StringIO(mapStr)
       lines = buf.readlines()
 
       worldShape = [len(lines[0]) - 1, len(lines)]
-      self.staticCells = np.chararray(shape = worldShape)
+      self.staticCells = np.zeros(shape = worldShape, dtype = np.int)
 
       for y in range(len(lines)):
 
@@ -42,7 +46,7 @@ class World:
             if ( c == '\n'):
                continue
 
-            self.staticCells[x, y] = c
+            self.staticCells[x, y] = ord(c)
             self.staticCellsPrecomputed.append(self.__calculateRenderable__(c, [x, y]))
 
       return self
@@ -59,14 +63,23 @@ class World:
       return self
 
    def getStaticId(self, localPos):
+      validPos = self.wrapCoordinates(localPos)
+      c = chr(self.staticCells[validPos[0], validPos[1]])
+      return c
 
-      if (localPos[0] < 0 or localPos[1] < 0 or localPos[0] >= self.staticCells.shape[0] or localPos[1] >= self.staticCells.shape[1]):
-         return None
+   def getAgentsIds(self, localPos):
+      validPos = self.wrapCoordinates(localPos)
 
-      return self.staticCells[localPos[0], localPos[1]]
+      agentIds = []
+      for agent in self.agents:
+         if (agent.getPos() == validPos).all():
+            agentIds.append(agent.getId())
+
+      return agentIds
 
    def isPositionOccupied(self, localPos):
-      return self.getStaticId(localPos) != ''
+      cellId = self.getStaticId(localPos)
+      return cellId != self.walkableCellId
 
    def findClosestUnoccupiedPosition(self, localPos):
 
@@ -75,8 +88,8 @@ class World:
       sideLen = 3
       while self.isPositionOccupied(testedCoords):
 
-         blockCoord, sideLen, cellId = self.unoccupiedSpaceTracer.trace(sideLen, cellIdx)
-         testedCoords = blockCoord + localPos
+         sideLen, cellIdx, blockCoord = self.unoccupiedSpaceTracer.trace(sideLen, cellIdx)
+         testedCoords = self.wrapCoordinates(blockCoord + localPos)
 
       return testedCoords
 
