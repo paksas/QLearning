@@ -23,6 +23,12 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="agents\mouse_ai.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="agents\__init__.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="main.py">
       <SubType>Code</SubType>
     </Compile>
@@ -31,6 +37,9 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="RL\__init__.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="utils\ai_statistics.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="utils\efficiency_plot.py">
@@ -68,6 +77,7 @@
     <InterpreterReference Include="Global|ContinuumAnalytics|Anaconda36-64" />
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="agents\" />
     <Folder Include="RL\" />
     <Folder Include="utils\" />
     <Folder Include="world\" />

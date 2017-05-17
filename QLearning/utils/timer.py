@@ -9,13 +9,15 @@ class Timer:
       
       self.totalTimeElapsed = 0
 
+      self.callbacks = []
+
    def setPeriod(self, period):
       self.period = period
 
    def getTimeElapsed(self):
       return self.totalTimeElapsed
 
-   def tick(self, callback):
+   def tick(self):
 
       currTime = time.time()
 
@@ -27,5 +29,12 @@ class Timer:
 
       if self.elapsedTime >= self.period:
          self.elapsedTime = 0
-         callback()
+         
+         self.__invokeCallbacks__()
 
+   def addToTick(self, callback):
+      self.callbacks.append(callback)
+
+   def __invokeCallbacks__(self):
+      for cb in self.callbacks:
+         cb()
