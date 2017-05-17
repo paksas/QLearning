@@ -3,7 +3,6 @@ import world
 import utils
 import RL
 import random
-import matplotlib.pyplot as plt
 import math
 import numpy as np
 
@@ -15,14 +14,43 @@ mapStr = \
    '          \n'\
    '          ';
 
+class AiStatistics:
+
+   def __init__(self, agent, goal):
+
+      self.agent = agent
+      self.goal = goal
+
+      self.__startRecording__()
+
+   def addStep(self):
+      self.numSteps += 1
+
+   def recordSample(self, plot):
+
+      if self.expectedNumSteps > 0.0:
+         predictionAccuracy = self.numSteps / self.expectedNumSteps
+         plot.addSample(predictionAccuracy)
+
+      self.__startRecording__()
+
+   def __startRecording__(self):
+      self.numSteps = 0
+      self.expectedNumSteps = self.__predictNumSteps__()
+
+   def __predictNumSteps__(self):
+      diff = self.agent.getPos() - self.goal.getPos()
+      return math.fabs(diff[0]) + math.fabs(diff[1])
+
+   def getSuccessRate(self):
+      return 2.0
 
 class MouseAI:
 
    def __init__(self, agent, cheese):
+
       self.agent = agent
       self.cheese = cheese
-
-      self.numSuccesses = 0
 
       self.directions = [
          np.array([1, -1]), 
@@ -35,6 +63,8 @@ class MouseAI:
          np.array([0, 0]),
          np.array([0, 1])]
 
+      self.goalReachedListener = None
+
       self.ai = RL.QLearn(numActions=len(self.directions), alpha=0.1, gamma=0.9, epsilon = 0.1)
       self.prevState = None
       self.prevAction = None
@@ -46,8 +76,8 @@ class MouseAI:
 
       if (self.agent.getPos() == self.cheese.getPos()).all():
          reward = 50
-         self.numSuccesses += 1
          self.cheese.setPos(scene.pickRandomLocation())
+         self.onGoalReached()
 
       if self.prevState is not None:
          self.ai.learn(self.prevState, self.prevAction, currState, reward)
@@ -73,35 +103,23 @@ class MouseAI:
          validNewPos = scene.wrapCoordinates(newPos)
          self.agent.setPos(validNewPos)
 
-   def getNumSuccesses(self):
-     return self.numSuccesses
+   def setGoalReachedListener(self, listener):
+      self.goalReachedListener = listener
 
+   def onGoalReached(self):
 
-class EfficiencyPlot:
+      if self.goalReachedListener is not None:
+         self.goalReachedListener()
 
-   def __init__(self):
+class LogicLoop:
 
-      self.nextIdx = 0
+   def __init__(self, mouseAI, aiStatistics):
+      self.mouseAI = mouseAI
+      self.aiStatistics = aiStatistics
 
-      self.ydata = []
-      plt.show()
-
-      self.axes = plt.gca()
-      self.axes.set_xlim(0, 100)
-      self.axes.set_ylim(-50, +50)
-
-      self.line, = self.axes.plot(self.ydata, 'r-')
-
-   def addSample(self, val):
-
-      self.xdata.append(self.nextIdx)
-      self.nextIdx += 1
-
-      self.ydata.append(val)
-
-      self.line.set_xdata(self.xdata)
-      self.line.set_ydata(self.ydata)
-      plt.draw()
+   def tick(self):
+      self.mouseAI.think(scene)
+      self.aiStatistics.addStep()
 
 if __name__ == '__main__':
    
@@ -120,19 +138,22 @@ if __name__ == '__main__':
    mouse = world.Agent('@', scene.pickRandomLocation())
    scene.addAgent(mouse);
    scene.addAgent(cheese);
+  
+   timer = utils.Timer(0.001)
+   efficiencyPlot = utils.EfficiencyPlot()
+   
+   aiStatistics = AiStatistics(mouse, cheese)
 
-   simulationdDelay = 0.001
-   timer = utils.Timer(simulationdDelay)
    mouseAI = MouseAI(mouse, cheese)  
+   mouseAI.setGoalReachedListener(lambda: aiStatistics.recordSample(efficiencyPlot))
 
-   # efficiencyPlot = EfficiencyPlot()
+   logicLoop = LogicLoop(mouseAI, aiStatistics)
 
    while display.keepRunning():
 
-      timer.tick(lambda: mouseAI.think(scene))
+      timer.tick(lambda: logicLoop.tick())
       
-      # efficiencyPlot.addSample(mouseAI.getEfficiencyChange())
-      if ( mouseAI.getNumSuccesses() > 1000 ):
+      if ( aiStatistics.getSuccessRate() <= 1.5 ):
          timer.setPeriod(0.5)
 
       screen = display.renderBegin()

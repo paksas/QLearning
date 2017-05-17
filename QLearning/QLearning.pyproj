@@ -33,6 +33,9 @@
     <Compile Include="RL\__init__.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="utils\efficiency_plot.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="utils\timer.py">
       <SubType>Code</SubType>
     </Compile>
