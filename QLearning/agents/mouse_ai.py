@@ -57,7 +57,8 @@ class MouseAI:
    def goInDirection(self, directionIdx, scene):
          newPos = self.agent.getPos() + self.directions[directionIdx]
          validNewPos = scene.wrapCoordinates(newPos)
-         self.agent.setPos(validNewPos)
+         if scene.isPositionOccupied(validNewPos) == False:
+            self.agent.setPos(validNewPos)
 
    def setGoalReachedListener(self, listener):
       self.goalReachedListener = listener

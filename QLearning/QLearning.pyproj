@@ -45,6 +45,9 @@
     <Compile Include="utils\efficiency_plot.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="utils\rectangle_tracer.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="utils\timer.py">
       <SubType>Code</SubType>
     </Compile>
@@ -52,9 +55,6 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="view\display.py">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="View\renderer.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="view\resource.py">

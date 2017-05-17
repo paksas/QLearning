@@ -1,5 +1,6 @@
 import io
 import random
+import utils
 import numpy as np 
 
 class World:
@@ -8,6 +9,8 @@ class World:
 
       self.cellSize = cellSize
       self.mappingsDict = resources
+
+      self.unoccupiedSpaceTracer = utils.RectangleTracer()
 
       self.agents = []
       self.staticCellsPrecomputed = []
@@ -62,6 +65,21 @@ class World:
 
       return self.staticCells[localPos[0], localPos[1]]
 
+   def isPositionOccupied(self, localPos):
+      return self.getStaticId(localPos) != ''
+
+   def findClosestUnoccupiedPosition(self, localPos):
+
+      testedCoords = localPos
+      cellIdx = 0
+      sideLen = 3
+      while self.isPositionOccupied(testedCoords):
+
+         blockCoord, sideLen, cellId = self.unoccupiedSpaceTracer.trace(sideLen, cellIdx)
+         testedCoords = blockCoord + localPos
+
+      return testedCoords
+
    def wrapCoordinates(self, localPos):
 
       validLocalPos = np.array(localPos)
@@ -78,6 +96,9 @@ class World:
 
    def pickRandomLocation(self):
 
-      return np.array([
+      origin = np.array([
          random.randint(0, self.staticCells.shape[0] - 1), 
          random.randint(0, self.staticCells.shape[1] - 1)])
+
+      validPos = self.findClosestUnoccupiedPosition(origin)
+      return validPos

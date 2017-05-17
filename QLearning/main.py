@@ -7,8 +7,8 @@ import numpy as np
 mapStr = \
    '          \n'\
    '          \n'\
-   '          \n'\
-   '          \n'\
+   '    #     \n'\
+   '    ###   \n'\
    '          \n'\
    '          ';
 
