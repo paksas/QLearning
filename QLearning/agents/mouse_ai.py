@@ -21,12 +21,24 @@ class MouseAI:
 
       self.goalReachedListener = None
 
-      self.ai = RL.QLearn(numActions=len(self.directions), alpha=0.1, gamma=0.9, epsilon = 0.1)
+      self.ai = RL.QLearn(numActions=len(self.directions), alpha=0.1, gamma=0.9)
       self.prevState = None
       self.prevAction = None
+      self.isLearning = False
+
+   def reset(self):
+      self.ai.reset()
+      self.prevState = None
+      self.prevAction = None
+      self.isLearning = False
+
+   def setLearningMode(self):
+      self.isLearning = True
+
+   def setTrainingMode(self):
+      self.isLearning = False
 
    def think(self, scene):
-
       currState = self.calcState()
       reward = -1
 
@@ -35,10 +47,14 @@ class MouseAI:
          self.cheese.setPos(scene.pickRandomLocation())
          self.onGoalReached()
 
-      if self.prevState is not None:
-         self.ai.learn(self.prevState, self.prevAction, currState, reward)
+      if self.isLearning:
+         if self.prevState is not None:
+            self.ai.learn(self.prevState, self.prevAction, currState, reward)
 
-      action = self.ai.chooseAction(currState)
+         action = self.ai.chooseAction(currState, epsilon = 0.1)
+      else:
+         action = self.ai.chooseAction(currState, epsilon = 0.0)
+      
       self.prevState = currState
       self.prevAction = action
 

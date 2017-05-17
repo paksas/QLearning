@@ -2,23 +2,25 @@ import random
 
 class QLearn:
 
-   def __init__(self, numActions, alpha=0.1, gamma=0.9, epsilon = 0.1):
+   def __init__(self, numActions, alpha=0.1, gamma=0.9):
 
       self.q = {}
 
       self.actions = range(numActions)
       self.alpha = alpha
       self.gamma = gamma
-      self.epsilon = epsilon
+
+   def reset(self):
+      self.q = {}
 
    def learn(self, prevState, prevAction, newState, reward):
 
       maxqnew = max([self.__getQ__(newState, a) for a in self.actions])
       self.__learnQ__(prevState, prevAction, reward, reward + self.gamma*maxqnew)
 
-   def chooseAction(self, state):
+   def chooseAction(self, state, epsilon):
 
-      if random.random() < self.epsilon:
+      if random.random() < epsilon:
          action = random.choice(self.actions)
          return action
 
