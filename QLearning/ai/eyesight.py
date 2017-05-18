@@ -12,18 +12,21 @@ class Eyesight:
          'e' : 3
       }
 
+      self.seenPositions = []
+
+   def forEachScannedPos(self, cb):
+      for pos in self.seenPositions:
+         cb(pos)
+
    def scan(self, scene, agentPos):
-      pattern = self.sensesPattern.toWorldSpace(agentPos)
+      self.seenPositions = self.sensesPattern.toWorldSpace(agentPos)
       
       stateVec = []
-      for pos in pattern:
+      for pos in self.seenPositions:
          dynamicIds = scene.getAgentsIds(pos)
-
-         selectedState = reduce((lambda x,y: max(x, y)), map(lambda id: self.idToPriorityMap[id], dynamicIds))
-         stateVec.append(selectedState)
+         if len(dynamicIds) > 0:
+            selectedState = reduce((lambda x,y: max(x, y)), map(lambda id: self.idToPriorityMap[id], dynamicIds))
+            stateVec.append(selectedState)
 
       return stateVec     
             
-
-
-

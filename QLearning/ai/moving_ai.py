@@ -32,9 +32,9 @@ class MovingAI:
    def addSense(self, sense):
       self.senses.append(sense)
 
-   def forEachSense(cb):
+   def forEachSense(self, cb):
       for sense in self.senses:
-         cb(ense)
+         cb(sense)
 
    def setRewards(self, eatingCheese=50, collision =-25, nothing = -1):
       self.rewardEatCheese = eatingCheese

@@ -130,9 +130,28 @@ class Game:
          self.__resetScene__()
 
    def __render__(self, screen):
+      self.__render_ai_view__(screen)
+
+   def __render_player_view__(self, screen):
 
       self.worldRenderer.clear()
       
       self.scene.forEachCell(lambda cell: self.worldRenderer.renderCell(cell))
+
+      self.worldRenderer.present(screen)
+
+   def __render_ai_view__(self, screen):
+
+      if self.mouse is None:
+         return
+
+      def __render_cell__(pos):
+         correspondingCell = self.scene.getCellAtPos(pos)
+         self.worldRenderer.renderCell(correspondingCell)
+
+      self.worldRenderer.clear()
+      
+      __render_cell__(self.mouse.getPos())
+      self.mouseAI.forEachSense(lambda sense: sense.forEachScannedPos(lambda pos: __render_cell__(pos) ) )
 
       self.worldRenderer.present(screen)

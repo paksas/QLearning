@@ -44,6 +44,9 @@ class World:
          for cell in col:
             cb(cell)
 
+   def getCellAtPos(self, localPos):
+      return self.cells[localPos[0]][localPos[1]]
+
    def addAgent(self, agent):
 
       self.agents.append(agent)
