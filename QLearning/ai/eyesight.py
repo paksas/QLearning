@@ -17,11 +17,9 @@ class Eyesight:
       
       stateVec = []
       for pos in pattern:
-         staticId = scene.getStaticId(pos)
          dynamicIds = scene.getAgentsIds(pos)
-         allIds = [staticId] + dynamicIds
 
-         selectedState = reduce((lambda x,y: max(x, y)), map(lambda id: self.idToPriorityMap[id], allIds))
+         selectedState = reduce((lambda x,y: max(x, y)), map(lambda id: self.idToPriorityMap[id], dynamicIds))
          stateVec.append(selectedState)
 
       return stateVec     

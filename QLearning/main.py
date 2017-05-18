@@ -3,8 +3,8 @@ import ai
 
 mapStr = \
    '#############\n'\
-   '#_____#_____#\n'\
-   '#___________#\n'\
+   '#     #     #\n'\
+   '#           #\n'\
    '#############';
 
       
@@ -17,7 +17,7 @@ if __name__ == '__main__':
    mouseAi = game.addMouse([1, 1])
   
    mouseAi.addSense(ai.Smell(cheese.getId()))
-   mouseAi.addSense(ai.Eyesight(1))
+   #mouseAi.addSense(ai.Eyesight(1))
 
    game.loop()
 

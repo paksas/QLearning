@@ -23,12 +23,6 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="agents\moving_ai.py">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="agents\__init__.py">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="ai\eyesight.py">
       <SubType>Code</SubType>
     </Compile>
@@ -96,7 +90,6 @@
     <InterpreterReference Include="Global|ContinuumAnalytics|Anaconda36-64" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="agents\" />
     <Folder Include="ai\" />
     <Folder Include="ai\" />
     <Folder Include="game\" />

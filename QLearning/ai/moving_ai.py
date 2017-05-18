@@ -32,6 +32,10 @@ class MovingAI:
    def addSense(self, sense):
       self.senses.append(sense)
 
+   def forEachSense(cb):
+      for sense in self.senses:
+         cb(ense)
+
    def setRewards(self, eatingCheese=50, collision =-25, nothing = -1):
       self.rewardEatCheese = eatingCheese
       self.rewardCollision = collision
@@ -69,10 +73,12 @@ class MovingAI:
    def __calculateReward__(self, scene):
       
       agentPos = self.agent.getPos()
-      if self.goalId in scene.getAgentsIds(agentPos):
+      agentIds = scene.getAgentsIds(agentPos)
+
+      if self.goalId in agentIds:
          reward = self.rewardEatCheese
          self.__onGoalReached__()
-      elif scene.getStaticId(agentPos) == self.wallId:
+      elif self.wallId in agentIds:
          reward = self.rewardCollision
       else:
          reward = self.rewardNothing

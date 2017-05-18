@@ -28,7 +28,11 @@ class Game:
          'e': view.Resource('resources/cheese.png'),
          '@': view.Resource('resources/mouse.png')}
 
-      self.scene = world.World(cellSize = np.array([32, 32]), resources = self.resources)
+      self.scene = world.World()
+
+      self.worldRenderer = world.WorldRenderer(
+         resources = self.resources, 
+         cellSize = np.array([32, 32]) )
 
    def __initKeyboardControls__(self):
       self.display.setKeypressListener(lambda: self.__toggleNextMode__())
@@ -48,7 +52,7 @@ class Game:
       self.aiStatistics = None
 
    def loadMap(self, mapDefinitionStr):
-      self.scene.loadLevel(mapDefinitionStr)
+      self.scene.loadLevel(mapStr = mapDefinitionStr, walkableCellId = '_')
 
    def addMouse(self, pos):
       if self.mouse is not None:
@@ -84,7 +88,7 @@ class Game:
          self.timer.tick()
       
          screen = self.display.renderBegin()
-         self.scene.render(screen)
+         self.__render__(screen)
          screen.blit(self.gameModeLabel[self.gameMode], (500, 460))
          self.display.renderEnd()
 
@@ -125,3 +129,10 @@ class Game:
          self.restartRequested = False
          self.__resetScene__()
 
+   def __render__(self, screen):
+
+      self.worldRenderer.clear()
+      
+      self.scene.forEachCell(lambda cell: self.worldRenderer.renderCell(cell))
+
+      self.worldRenderer.present(screen)
