@@ -4,7 +4,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>5c78b782-78ef-4175-aa6e-c2e1b78e0d93</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>eye_sight_ai.py</StartupFile>
+    <StartupFile>main.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
@@ -37,10 +37,13 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="ai\__init__.py" />
-    <Compile Include="directional_ai.py">
+    <Compile Include="main.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="eye_sight_ai.py">
+    <Compile Include="game\game.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="game\__init__.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="RL\qlearn.py">
@@ -93,8 +96,10 @@
     <InterpreterReference Include="Global|ContinuumAnalytics|Anaconda36-64" />
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="agents\" />
     <Folder Include="ai\" />
     <Folder Include="ai\" />
+    <Folder Include="game\" />
     <Folder Include="RL\" />
     <Folder Include="utils\" />
     <Folder Include="world\" />
