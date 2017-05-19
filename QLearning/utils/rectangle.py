@@ -5,10 +5,9 @@ class Rectangle:
    def __init__(self, halfWidth, halfHeight):            
       self.pattern = []
 
-      for y in range(-halfHeight, halfHeight):
-         for x in range(-halfWidth, halfWidth):
-            if (x != 0) and (y != 0):
-               self.pattern.append(np.array([x, y]))
+      for y in range(-halfHeight, halfHeight + 1):
+         for x in range(-halfWidth, halfWidth + 1):
+            self.pattern.append(np.array([x, y]))
 
    def toWorldSpace(self, origin):
       worldSpacePattern = []

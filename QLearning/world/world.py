@@ -45,7 +45,8 @@ class World:
             cb(cell)
 
    def getCellAtPos(self, localPos):
-      return self.cells[localPos[0]][localPos[1]]
+      validPos = self.wrapCoordinates(localPos)
+      return self.cells[validPos[0]][validPos[1]]
 
    def addAgent(self, agent):
 

@@ -32,6 +32,9 @@ class MovingAI:
    def addSense(self, sense):
       self.senses.append(sense)
 
+   def removeSense(self, sense):
+      self.senses.remove(sense)
+
    def forEachSense(self, cb):
       for sense in self.senses:
          cb(sense)
@@ -54,6 +57,10 @@ class MovingAI:
       self.isLearning = enable
 
    def think(self, scene):
+
+      if self.prevAction is not None:
+         self.__goInDirection__(self.prevAction, scene)
+
       currState = self.__calculateState__(scene)
       reward = self.__calculateReward__(scene)
       
@@ -67,8 +74,6 @@ class MovingAI:
       
       self.prevState = currState
       self.prevAction = action
-
-      self.__goInDirection__(action, scene)
 
    def __calculateReward__(self, scene):
       

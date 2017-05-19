@@ -55,6 +55,8 @@ class Game:
       self.gameMode = 0
       self.mouse = None
       self.mouseAI = None
+      self.eyesight = ai.Eyesight(1)
+      self.smell = ai.Smell('e')
       self.cheese = None
       self.aiStatistics = None
 
@@ -81,10 +83,16 @@ class Game:
             self.__onGameModeChanged__(self.gameMode, self.mouseAI, self.timer)
 
       def onEyesightChanged(modeId):
-         pass
+         if modeId == 'on':          
+            self.mouseAI.addSense(self.eyesight)
+         else:
+            self.mouseAI.removeSense(self.eyesight)
 
       def onSmellChanged(modeId):
-         pass
+         if modeId == 'on':       
+            self.mouseAI.addSense(self.smell)
+         else:
+            self.mouseAI.removeSense(self.smell)
 
       def onSave():
          pass
@@ -192,7 +200,6 @@ class Game:
 
       self.worldRenderer.clear()
       
-      __render_cell__(self.mouse.getPos())
       self.mouseAI.forEachSense(lambda sense: sense.forEachScannedPos(lambda pos: __render_cell__(pos) ) )
 
       self.worldRenderer.present(screen)
