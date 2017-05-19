@@ -14,6 +14,9 @@ class Eyesight:
 
       self.seenPositions = []
 
+   def setDistance(self, range):
+      self.sensesPattern = utils.Rectangle(range, range)
+
    def forEachScannedPos(self, cb):
       for pos in self.seenPositions:
          cb(pos)

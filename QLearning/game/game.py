@@ -62,9 +62,6 @@ class Game:
 
    def __initUI__(self):
 
-      self.ui = view.UI()
-      self.ui.registerInputHandlers(self.input)
-
       self.viewModes = {
          'player' : self.__render_player_view__,
          'ai' : self.__render_ai_view__ }
@@ -88,6 +85,13 @@ class Game:
          else:
             self.mouseAI.removeSense(self.eyesight)
 
+      def onViewDistanceChanged(modeId):
+         if modeId == 'near':          
+            self.eyesight.setDistance(1)
+         else:
+            self.eyesight.setDistance(3)
+
+
       def onSmellChanged(modeId):
          if modeId == 'on':       
             self.mouseAI.addSense(self.smell)
@@ -109,14 +113,67 @@ class Game:
       def onSetMap(mapId):
          pass
 
-      self.ui.onViewModeChanged(lambda modeId: onViewModeChanged(modeId))
-      self.ui.onMemoryModeChanged(lambda modeId: onMemoryModeChanged(modeId))
-      self.ui.onEyesightChanged(lambda modeId: onEyesightChanged(modeId))
-      self.ui.onSmellChanged(lambda modeId: onSmellChanged(modeId))
-      self.ui.onSave(lambda _: onSave())
-      self.ui.onLoad(lambda _: onLoad())
-      self.ui.onTimeMultiplierChanged(lambda modeId: onTimeMultiplierChanged(modeId))
-      self.ui.onSetMap(lambda modeId: onSetMap(mapId))
+      self.ui = view.UI([440, 10])
+
+      viewModeOpt = self.ui.addOption(
+            key = 'F1', 
+            label = 'view', 
+            options = ['player', 'ai'], 
+            action = lambda modeId: onViewModeChanged(modeId))
+
+      memoryModeOpt = self.ui.addOption(
+            key = 'F2', 
+            label = 'memory', 
+            options = ['off-line', 'learn', 'test'], 
+            action = lambda modeId: onMemoryModeChanged(modeId))
+
+      timeMulToggleOpt = self.ui.addOption(
+            key = 'F3', 
+            label = 'time',
+            options = ['normal', 'fast'],
+            action = lambda modeId: onTimeMultiplierChanged(modeId))
+
+      self.ui.addSeparator()
+
+      saveOpt = self.ui.addOption(
+            key = 'F5', 
+            label = 'save',
+            action = lambda: onSave())
+
+      loadOpt = self.ui.addOption(
+            key = 'F6', 
+            label = 'load',
+            action = lambda: onLoad())
+
+      self.ui.addSeparator()
+
+      eyesightToggleOpt = self.ui.addOption(
+            key = 'F9', 
+            label = 'eyes', 
+            options = ['off', 'on'], 
+            action = lambda modeId: onEyesightChanged(modeId))
+
+      smellToggleOpt = self.ui.addOption(
+            key = 'F10', 
+            label = 'smell', 
+            options = ['off', 'on'], 
+            action = lambda modeId: onSmellChanged(modeId))
+
+      viewDistanceToggleOpt = self.ui.addOption(
+            key = 'F11', 
+            label = 'view dist',
+            options = ['near', 'far'],
+            action = lambda modeId: onViewDistanceChanged(modeId))
+
+      self.input.onKeyPressed(pygame.K_F1, viewModeOpt.execute)
+      self.input.onKeyPressed(pygame.K_F2, memoryModeOpt.execute)
+      self.input.onKeyPressed(pygame.K_F3, timeMulToggleOpt.execute)
+      self.input.onKeyPressed(pygame.K_F5, saveOpt.execute)
+      self.input.onKeyPressed(pygame.K_F6, loadOpt.execute)
+      self.input.onKeyPressed(pygame.K_F9, eyesightToggleOpt.execute)
+      self.input.onKeyPressed(pygame.K_F10, smellToggleOpt.execute)
+      self.input.onKeyPressed(pygame.K_F11, viewDistanceToggleOpt.execute)
+         
 
    def loadMap(self, mapDefinitionStr):
       self.scene.loadLevel(mapStr = mapDefinitionStr, walkableCellId = '_')
