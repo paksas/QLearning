@@ -1,4 +1,5 @@
 import random
+import copy
 
 class QLearn:
 
@@ -12,6 +13,13 @@ class QLearn:
 
    def reset(self):
       self.q = {}
+
+   def save(self):
+      savedBrain = copy.deepcopy(self.q)
+      return savedBrain
+
+   def load(self, savedBrain):
+      self.q = copy.deepcopy(savedBrain)
 
    def learn(self, prevState, prevAction, newState, reward):
 

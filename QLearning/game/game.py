@@ -59,26 +59,23 @@ class Game:
       self.smell = ai.Smell('e')
       self.cheese = None
       self.aiStatistics = None
+      self.savedBrain = None
+      self.savedBrainNo = -1
 
    def __initUI__(self):
 
-      self.viewModes = {
-         'player' : self.__render_player_view__,
-         'ai' : self.__render_ai_view__ }
-
-      self.gameModes = {
-         'off-line' : 0,
-         'learn' : 1,
-         'test' : 2}
-
       def onViewModeChanged(modeId):
-         self.viewMode = self.viewModes[modeId]
+         if modeId == 'player':          
+            self.viewMode = self.__render_player_view__
+         else:
+            self.viewMode = self.__render_ai_view__
 
-      def onMemoryModeChanged(modeId):
-         self.gameMode = self.gameModes[modeId]         
-         if self.mouseAI is not None:
-            self.__onGameModeChanged__(self.gameMode, self.mouseAI, self.timer)
-
+      def onBrainModeChanged(modeId):
+         if modeId == 'test':          
+            self.mouseAI.setLearningMode(False)
+         else:
+            self.mouseAI.setLearningMode(True)
+        
       def onEyesightChanged(modeId):
          if modeId == 'on':          
             self.mouseAI.addSense(self.eyesight)
@@ -91,7 +88,6 @@ class Game:
          else:
             self.eyesight.setDistance(3)
 
-
       def onSmellChanged(modeId):
          if modeId == 'on':       
             self.mouseAI.addSense(self.smell)
@@ -99,10 +95,19 @@ class Game:
             self.mouseAI.removeSense(self.smell)
 
       def onSave():
-         pass
+         self.savedBrainNo += 1
+         optionStr = 'save_{0}'.format(self.savedBrainNo)
+         self.uiOptions['save'].setOptions([optionStr])
+         self.savedBrain = self.mouseAI.save()
 
       def onLoad():
-         pass
+         self.uiOptions['brain'].setOption('test').execute()
+         if self.savedBrain is not None:
+            self.mouseAI.load(self.savedBrain)          
+
+      def onReset():
+         self.uiOptions['brain'].setOption('test').execute()
+         self.mouseAI.reset()
 
       def onTimeMultiplierChanged(modeId):
          if modeId == 'normal':
@@ -115,19 +120,20 @@ class Game:
 
       self.ui = view.UI([440, 10])
 
-      viewModeOpt = self.ui.addOption(
+      self.uiOptions = {}
+      self.uiOptions['view'] = self.ui.addOption(
             key = 'F1', 
             label = 'view', 
             options = ['player', 'ai'], 
             action = lambda modeId: onViewModeChanged(modeId))
 
-      memoryModeOpt = self.ui.addOption(
+      self.uiOptions['brain'] = self.ui.addOption(
             key = 'F2', 
-            label = 'memory', 
-            options = ['off-line', 'learn', 'test'], 
-            action = lambda modeId: onMemoryModeChanged(modeId))
+            label = 'brain', 
+            options = ['test', 'learn'], 
+            action = lambda modeId: onBrainModeChanged(modeId))
 
-      timeMulToggleOpt = self.ui.addOption(
+      self.uiOptions['time'] = self.ui.addOption(
             key = 'F3', 
             label = 'time',
             options = ['normal', 'fast'],
@@ -135,46 +141,52 @@ class Game:
 
       self.ui.addSeparator()
 
-      saveOpt = self.ui.addOption(
+      self.uiOptions['save'] = self.ui.addOption(
             key = 'F5', 
             label = 'save',
-            action = lambda: onSave())
+            action = lambda _: onSave())
 
-      loadOpt = self.ui.addOption(
+      self.uiOptions['load'] = self.ui.addOption(
             key = 'F6', 
             label = 'load',
-            action = lambda: onLoad())
+            action = lambda _: onLoad())
+
+      self.uiOptions['reset'] = self.ui.addOption(
+            key = 'F7', 
+            label = 'reset',
+            action = lambda _: onReset())
+
 
       self.ui.addSeparator()
 
-      eyesightToggleOpt = self.ui.addOption(
+      self.uiOptions['eyesight'] = self.ui.addOption(
             key = 'F9', 
             label = 'eyes', 
             options = ['off', 'on'], 
             action = lambda modeId: onEyesightChanged(modeId))
 
-      smellToggleOpt = self.ui.addOption(
+      self.uiOptions['smell'] = self.ui.addOption(
             key = 'F10', 
             label = 'smell', 
             options = ['off', 'on'], 
             action = lambda modeId: onSmellChanged(modeId))
 
-      viewDistanceToggleOpt = self.ui.addOption(
+      self.uiOptions['viewDist'] = self.ui.addOption(
             key = 'F11', 
-            label = 'view dist',
+            label = 'view dist.',
             options = ['near', 'far'],
             action = lambda modeId: onViewDistanceChanged(modeId))
 
-      self.input.onKeyPressed(pygame.K_F1, viewModeOpt.execute)
-      self.input.onKeyPressed(pygame.K_F2, memoryModeOpt.execute)
-      self.input.onKeyPressed(pygame.K_F3, timeMulToggleOpt.execute)
-      self.input.onKeyPressed(pygame.K_F5, saveOpt.execute)
-      self.input.onKeyPressed(pygame.K_F6, loadOpt.execute)
-      self.input.onKeyPressed(pygame.K_F9, eyesightToggleOpt.execute)
-      self.input.onKeyPressed(pygame.K_F10, smellToggleOpt.execute)
-      self.input.onKeyPressed(pygame.K_F11, viewDistanceToggleOpt.execute)
+      self.input.onKeyPressed(pygame.K_F1, lambda: self.uiOptions['view'].toggle().execute())
+      self.input.onKeyPressed(pygame.K_F2, lambda: self.uiOptions['brain'].toggle().execute())
+      self.input.onKeyPressed(pygame.K_F3, lambda: self.uiOptions['time'].toggle().execute())
+      self.input.onKeyPressed(pygame.K_F5, lambda: self.uiOptions['save'].execute())
+      self.input.onKeyPressed(pygame.K_F6, lambda: self.uiOptions['load'].execute())
+      self.input.onKeyPressed(pygame.K_F7, lambda: self.uiOptions['reset'].execute())
+      self.input.onKeyPressed(pygame.K_F9, lambda: self.uiOptions['eyesight'].toggle().execute())
+      self.input.onKeyPressed(pygame.K_F10, lambda: self.uiOptions['smell'].toggle().execute())
+      self.input.onKeyPressed(pygame.K_F11, lambda: self.uiOptions['viewDist'].toggle().execute())
          
-
    def loadMap(self, mapDefinitionStr):
       self.scene.loadLevel(mapStr = mapDefinitionStr, walkableCellId = '_')
 
@@ -189,7 +201,7 @@ class Game:
 
       self.mouseAI = ai.MovingAI(agent = self.mouse, goalId = 'e', wallId = '#')
       self.mouseAI.setGoalReachedListener(lambda: self.__onGoalReached__())
-      self.__onGameModeChanged__(self.gameMode, self.mouseAI, self.timer)
+      self.mouseAI.setLearningMode(False)
 
       self.aiStatistics = utils.AiStatistics(self.mouse)
       self.timer.addToTick(lambda: self.aiStatistics.addStep())
@@ -217,15 +229,6 @@ class Game:
          self.__render__(screen)
          screen.blit(self.gameModeLabel[self.gameMode], (500, 460))
          self.display.renderEnd()
-
-   def __onGameModeChanged__(self, gameMode, mouseAI, timer):
-
-      if gameMode == 0:
-         mouseAI.reset()
-      elif gameMode == 1:
-         mouseAI.setLearningMode(True)
-      elif gameMode == 2:
-         mouseAI.setLearningMode(False)
 
    def __resetScene__(self):
       if self.mouse is not None:

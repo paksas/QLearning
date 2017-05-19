@@ -51,7 +51,6 @@ class MovingAI:
       self.ai.reset()
       self.prevState = None
       self.prevAction = None
-      self.isLearning = False
 
    def setLearningMode(self, enable):
       self.isLearning = enable
@@ -74,6 +73,12 @@ class MovingAI:
       
       self.prevState = currState
       self.prevAction = action
+
+   def save(self):
+      return self.ai.save()
+
+   def load(self, savedBrain):
+      self.ai.load(savedBrain)
 
    def __calculateReward__(self, scene):
       
