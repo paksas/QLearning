@@ -1,2 +1,3 @@
-from .display import Display
-from .resource import Resource
+from .display import *
+from .input import *
+from .resource import *

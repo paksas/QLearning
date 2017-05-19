@@ -13,8 +13,6 @@ class Display:
       self.screen = pygame.display.set_mode(size)
       self.font = pygame.font.SysFont("monospace", 15)
 
-      self.keypressListener = None
-
    def renderBegin(self):
 
       self.screen.fill(self.black)
@@ -27,20 +25,3 @@ class Display:
       label = self.font.render(msg, width, color)
       return label
       
-   def handleEvents(self):
-
-      for event in pygame.event.get():
-         if event.type == pygame.QUIT:
-            return False
-
-         if event.type == pygame.KEYDOWN:
-            self.__onKeyPress__()
-        
-      return True
-
-   def setKeypressListener(self, listener):
-      self.keypressListener = listener
-
-   def __onKeyPress__(self):
-      if self.keypressListener is not None:
-         self.keypressListener()

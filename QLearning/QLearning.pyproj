@@ -70,6 +70,9 @@
     <Compile Include="view\display.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="view\input.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="view\resource.py">
       <SubType>Code</SubType>
     </Compile>

@@ -3,6 +3,7 @@ import world
 import utils
 import ai
 import numpy as np
+import pygame
 
 class Game:
 
@@ -21,6 +22,8 @@ class Game:
          self.display.buildLabel("training"),
          self.display.buildLabel("testing")]
 
+      self.viewMode = self.__render_player_view__
+
    def __initWorld__(self):     
       self.resources = {
          '_': view.Resource('resources/grass.png'),
@@ -35,17 +38,34 @@ class Game:
          cellSize = np.array([32, 32]) )
 
    def __initKeyboardControls__(self):
-      self.display.setKeypressListener(lambda: self.__toggleNextMode__())
+      self.input = view.Input()
+      self.shouldKeepRunning = True
+
+      def toggleKeepRunning():
+         self.shouldKeepRunning = False
+
+      def toggleViewType():
+         if self.viewMode == self.__render_ai_view__:
+            self.viewMode = self.__render_player_view__
+         else:
+            self.viewMode = self.__render_ai_view__
+
+      def toggleNextMode():
+         self.gameMode = (self.gameMode + 1) % 3
+
+         if self.mouseAI is not None:
+            self.__onGameModeChanged__(self.gameMode, self.mouseAI, self.timer)
+
+      self.input.onQuit(lambda: toggleKeepRunning())
+      self.input.onKeyPressed(pygame.K_SPACE, lambda: toggleNextMode())
+      self.input.onKeyPressed(pygame.K_F1, lambda: toggleViewType())
 
    def __initUtils__(self):
       self.timer = utils.Timer(0.001)
       self.efficiencyPlot = utils.EfficiencyPlot()
 
-      self.timer.addToTick(lambda: self.__tick__())
-
    def __initAI__(self):
       self.gameMode = 0
-      self.restartRequested = False
       self.mouse = None
       self.mouseAI = None
       self.cheese = None
@@ -83,20 +103,16 @@ class Game:
       return self.cheese
 
    def loop(self):
-      while self.display.handleEvents():
 
+      while self.shouldKeepRunning:
+
+         self.input.handleEvents()
          self.timer.tick()
       
          screen = self.display.renderBegin()
          self.__render__(screen)
          screen.blit(self.gameModeLabel[self.gameMode], (500, 460))
          self.display.renderEnd()
-
-   def __toggleNextMode__(self):
-      self.gameMode = (self.gameMode + 1) % 3
-
-      if self.mouseAI is not None:
-         self.__onGameModeChanged__(self.gameMode, self.mouseAI, self.timer)
 
    def __onGameModeChanged__(self, gameMode, mouseAI, timer):
 
@@ -110,9 +126,6 @@ class Game:
          mouseAI.setLearningMode(False)
          timer.setPeriod(0.5)
 
-   def __requestRestart__(self):
-      self.restartRequested = True
-
    def __resetScene__(self):
       if self.mouse is not None:
          self.mouse.setPos(self.mouseStartPos)
@@ -124,13 +137,8 @@ class Game:
       self.__resetScene__()
       self.aiStatistics.recordSample(self.efficiencyPlot)
 
-   def __tick__(self):
-      if self.restartRequested:
-         self.restartRequested = False
-         self.__resetScene__()
-
    def __render__(self, screen):
-      self.__render_ai_view__(screen)
+      self.viewMode(screen)
 
    def __render_player_view__(self, screen):
 
