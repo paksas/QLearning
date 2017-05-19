@@ -48,6 +48,7 @@ class UI:
          'smell': Resource('resources/label_smell.png'),
          'save': Resource('resources/label_save.png'),
          'load': Resource('resources/label_load.png'),
+         'time': Resource('resources/label_time.png'),
          'map': Resource('resources/label_map.png'),
          'ai': Resource('resources/value_ai.png'),
          'learn': Resource('resources/value_learn.png'),
@@ -55,7 +56,9 @@ class UI:
          'off-line': Resource('resources/value_off_line.png'),
          'on': Resource('resources/value_on.png'),
          'player': Resource('resources/value_player.png'),
-         'test': Resource('resources/value_test.png')}
+         'test': Resource('resources/value_test.png'),
+         'normal': Resource('resources/value_normal.png'),
+         'fast': Resource('resources/value_fast.png'),}
 
       vertOffset = 10
       horizOffset = 440
@@ -66,7 +69,8 @@ class UI:
          'smell': UIEntry(self.resources, 'smell', ['off', 'on'], [horizOffset, vertOffset + 32 * 3]),
          'save': UIEntry(self.resources, 'save', [], [horizOffset, vertOffset + 32 * 4]),
          'load': UIEntry(self.resources, 'load', [], [horizOffset, vertOffset + 32 * 5]),
-         'map': UIEntry(self.resources, 'map', [], [horizOffset, vertOffset + 32 * 6])}
+         'time': UIEntry(self.resources, 'time', ['normal', 'fast'], [horizOffset, vertOffset + 32 * 6]),
+         'map': UIEntry(self.resources, 'map', [], [horizOffset, vertOffset + 32 * 7])}
 
       self.handlers = {
          'view': None,
@@ -75,6 +79,7 @@ class UI:
          'smell': None,
          'save': None,
          'load': None,
+         'time': None,
          'map': None}
 
    def render(self, screen):
@@ -96,6 +101,7 @@ class UI:
       input.onKeyPressed(pygame.K_F4, lambda: executeAction('smell'))
       input.onKeyPressed(pygame.K_F5, lambda: executeAction('save'))
       input.onKeyPressed(pygame.K_F6, lambda: executeAction('load'))
+      input.onKeyPressed(pygame.K_F7, lambda: executeAction('time'))
 
    #
    # Event handlers
@@ -118,6 +124,9 @@ class UI:
 
    def onLoad(self, handler):
       self.handlers['load'] = handler
+
+   def onTimeMultiplierChanged(self, handler):
+      self.handlers['time'] = handler
 
    def onSetMap(self, handler):
       self.handlers['map'] = handler

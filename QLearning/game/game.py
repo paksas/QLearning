@@ -48,7 +48,7 @@ class Game:
       self.input.onQuit(lambda: toggleKeepRunning())
 
    def __initUtils__(self):
-      self.timer = utils.Timer(0.001)
+      self.timer = utils.Timer(0.5)
       self.efficiencyPlot = utils.EfficiencyPlot()
 
    def __initAI__(self):
@@ -100,6 +100,12 @@ class Game:
       def onLoad():
          pass
 
+      def onTimeMultiplierChanged(modeId):
+         if modeId == 'normal':
+            self.timer.setPeriod(0.5)
+         else:
+            self.timer.setPeriod(0.0001)
+
       def onSetMap(mapId):
          pass
 
@@ -107,9 +113,10 @@ class Game:
       self.ui.onMemoryModeChanged(lambda modeId: onMemoryModeChanged(modeId))
       self.ui.onEyesightChanged(lambda modeId: onEyesightChanged(modeId))
       self.ui.onSmellChanged(lambda modeId: onSmellChanged(modeId))
-      self.ui.onSave(lambda: onSave())
-      self.ui.onLoad(lambda: onLoad())
-      self.ui.onSetMap(lambda: onSetMap(mapId))
+      self.ui.onSave(lambda _: onSave())
+      self.ui.onLoad(lambda _: onLoad())
+      self.ui.onTimeMultiplierChanged(lambda modeId: onTimeMultiplierChanged(modeId))
+      self.ui.onSetMap(lambda modeId: onSetMap(mapId))
 
    def loadMap(self, mapDefinitionStr):
       self.scene.loadLevel(mapStr = mapDefinitionStr, walkableCellId = '_')
@@ -158,13 +165,10 @@ class Game:
 
       if gameMode == 0:
          mouseAI.reset()
-         timer.setPeriod(0.5)
       elif gameMode == 1:
          mouseAI.setLearningMode(True)
-         timer.setPeriod(0.0001)
       elif gameMode == 2:
          mouseAI.setLearningMode(False)
-         timer.setPeriod(0.5)
 
    def __resetScene__(self):
       if self.mouse is not None:
