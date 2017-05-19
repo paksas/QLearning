@@ -76,6 +76,9 @@
     <Compile Include="view\resource.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="view\ui.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="view\__init__.py">
       <SubType>Code</SubType>
     </Compile>

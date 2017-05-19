@@ -9,8 +9,9 @@ class Game:
 
    def __init__(self):
       self.__initDisplay__()
-      self.__initWorld__()
       self.__initKeyboardControls__()
+      self.__initUI__()
+      self.__initWorld__()
       self.__initUtils__()
       self.__initAI__()
 
@@ -44,21 +45,7 @@ class Game:
       def toggleKeepRunning():
          self.shouldKeepRunning = False
 
-      def toggleViewType():
-         if self.viewMode == self.__render_ai_view__:
-            self.viewMode = self.__render_player_view__
-         else:
-            self.viewMode = self.__render_ai_view__
-
-      def toggleNextMode():
-         self.gameMode = (self.gameMode + 1) % 3
-
-         if self.mouseAI is not None:
-            self.__onGameModeChanged__(self.gameMode, self.mouseAI, self.timer)
-
       self.input.onQuit(lambda: toggleKeepRunning())
-      self.input.onKeyPressed(pygame.K_SPACE, lambda: toggleNextMode())
-      self.input.onKeyPressed(pygame.K_F1, lambda: toggleViewType())
 
    def __initUtils__(self):
       self.timer = utils.Timer(0.001)
@@ -70,6 +57,51 @@ class Game:
       self.mouseAI = None
       self.cheese = None
       self.aiStatistics = None
+
+   def __initUI__(self):
+
+      self.ui = view.UI()
+      self.ui.registerInputHandlers(self.input)
+
+      self.viewModes = {
+         'player' : self.__render_player_view__,
+         'ai' : self.__render_ai_view__ }
+
+      self.gameModes = {
+         'off-line' : 0,
+         'learn' : 1,
+         'test' : 2}
+
+      def onViewModeChanged(modeId):
+         self.viewMode = self.viewModes[modeId]
+
+      def onMemoryModeChanged(modeId):
+         self.gameMode = self.gameModes[modeId]         
+         if self.mouseAI is not None:
+            self.__onGameModeChanged__(self.gameMode, self.mouseAI, self.timer)
+
+      def onEyesightChanged(modeId):
+         pass
+
+      def onSmellChanged(modeId):
+         pass
+
+      def onSave():
+         pass
+
+      def onLoad():
+         pass
+
+      def onSetMap(mapId):
+         pass
+
+      self.ui.onViewModeChanged(lambda modeId: onViewModeChanged(modeId))
+      self.ui.onMemoryModeChanged(lambda modeId: onMemoryModeChanged(modeId))
+      self.ui.onEyesightChanged(lambda modeId: onEyesightChanged(modeId))
+      self.ui.onSmellChanged(lambda modeId: onSmellChanged(modeId))
+      self.ui.onSave(lambda: onSave())
+      self.ui.onLoad(lambda: onLoad())
+      self.ui.onSetMap(lambda: onSetMap(mapId))
 
    def loadMap(self, mapDefinitionStr):
       self.scene.loadLevel(mapStr = mapDefinitionStr, walkableCellId = '_')
@@ -139,6 +171,7 @@ class Game:
 
    def __render__(self, screen):
       self.viewMode(screen)
+      self.ui.render(screen)
 
    def __render_player_view__(self, screen):
 
