@@ -121,6 +121,9 @@ class Game:
          mapDefinitionStr = self.__loadMapFile(mapFilePath)
          self.scene.loadLevel(mapStr = mapDefinitionStr, walkableCellId = '_')
          self.__buildAI__()
+         self.uiOptions['eyesight'].execute()
+         self.uiOptions['smell'].execute()
+
          
       self.ui = view.UI([440, 10])
 
@@ -176,9 +179,9 @@ class Game:
 
       self.ui.addSeparator()
 
-      self.uiOptions['map'] = self.ui.addMultichoiceOption( 
+      self.uiOptions['map'] = self.ui.addOption( 
+            key = '1-7', 
             label = 'maps',
-            numOptions = 6,
             action = lambda optionId: onLoadMap(optionId))
 
       self.input.onKeyPressed(pygame.K_F1, lambda: self.uiOptions['view'].toggle().execute())
@@ -196,6 +199,7 @@ class Game:
       self.input.onKeyPressed(pygame.K_4, lambda: self.uiOptions['map'].execute('resources/up_corridor.txt'))
       self.input.onKeyPressed(pygame.K_5, lambda: self.uiOptions['map'].execute('resources/twisted_corridor.txt'))
       self.input.onKeyPressed(pygame.K_6, lambda: self.uiOptions['map'].execute('resources/maze_1.txt'))
+      self.input.onKeyPressed(pygame.K_7, lambda: self.uiOptions['map'].execute('resources/maze_2.txt'))
          
    def loop(self):
       while self.shouldKeepRunning:
@@ -223,9 +227,6 @@ class Game:
          mouseAI = ai.MovingAI(agent = mouse, memory = self.memory)
          self.positionMonitors.append(ai.PositionMonitor(agent = mouse, goalId = 'e', teleportPos = mouse.getPos()))
          self.aiCollection.add(mouseAI)
-
-      self.aiCollection.addSense(self.eyesight)
-      self.aiCollection.addSense(self.smell)
 
       if self.aiCollection.len() > 0:
          self.trainedAI.setAI(self.aiCollection.getAI(0))

@@ -7,7 +7,7 @@ class Plot:
 
       self.axes = plt.gca()
       self.axes.set_xlim(0, 100)
-      self.axes.set_ylim(0, 40)
+      self.axes.set_ylim(0, 100)
       
       self.nextIdx = 0
       self.xdata = []

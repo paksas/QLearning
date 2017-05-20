@@ -23,10 +23,12 @@ class MovingAI:
       self.learningModule = module
 
    def addSense(self, sense):
-      self.senses.append(sense)
+      if sense not in self.senses:
+         self.senses.append(sense)
 
    def removeSense(self, sense):
-      self.senses.remove(sense)
+      if sense in self.senses:
+         self.senses.remove(sense)
 
    def forEachSense(self, cb):
       for sense in self.senses:

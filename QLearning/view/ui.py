@@ -51,32 +51,11 @@ class UIEntry:
 
       return self
 
-   def execute(self):
-      option = None
-      if self.activeOptionIdx >= 0:
+   def execute(self, option = None):
+      if option is None and self.activeOptionIdx >= 0:
          option = self.options[self.activeOptionIdx]
 
       self.action(option)
-      return self
-
-class UIMultichoiceEntry:
-
-   def __init__(self, menu, position, label, numOptions, action):
-      self.menu = menu
-      self.position = position
-
-      self.labelLabel = self.menu.labelFont.render(label, 1, (255, 255, 255))
-      optionLabelStr = str([optionIdx + 1 for optionIdx in range(numOptions)])
-      self.optionLabel = self.menu.valueFont.render(optionLabelStr, 1, (255, 255, 255))
-
-      self.action = action
-
-   def render(self, screen):
-      screen.blit(self.labelLabel, (self.position[0], self.position[1]))
-      screen.blit(self.optionLabel, (self.position[0], self.position[1] + 20))
-
-   def execute(self, value):
-      self.action(value)
       return self
 
 class UI:
@@ -99,15 +78,6 @@ class UI:
 
       entry = UIEntry(self, entryPos, key, label, action)
       entry.setOptions(options)
-      self.entries.append(entry)
-      return entry
-
-   def addMultichoiceOption(self, label, numOptions, action = None):
-
-      entryPos = self.nextEntryPos
-      self.nextEntryPos = self.nextEntryPos + self.entriesSpacing
-
-      entry = UIMultichoiceEntry(self, entryPos, label, numOptions, action)
       self.entries.append(entry)
       return entry
 
