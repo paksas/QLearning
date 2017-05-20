@@ -27,11 +27,6 @@ class Game:
          'e': view.Resource('resources/cheese.png'),
          '@': view.Resource('resources/mouse.png')}
 
-      self.mapFilePaths = [
-         'resources/straight_corridor.txt',
-         'resources/twisted_corridor.txt',
-         'resources/maze.txt']
-
       self.scene = world.World()
 
       self.worldRenderer = world.WorldRenderer(
@@ -47,9 +42,12 @@ class Game:
 
       self.input.onQuit(lambda: toggleKeepRunning())
 
-   def __initAI__(self):      
+   def __initAI__(self):    
+      self.efficiencyPlot = utils.EfficiencyPlot()
+
       self.aiCollection = ai.AICollection()
-      self.trainedAI = ai.TrainedAI(goalId = 'e', wallId = '#')      
+      self.positionMonitors = []
+      self.trainedAI = ai.TrainedAI(goalId = 'e', wallId = '#', statisticsPlot = self.efficiencyPlot)      
 
       self.eyesight = ai.Eyesight(1)
       self.smell = ai.Smell('e')
@@ -59,16 +57,14 @@ class Game:
       self.savedMemoryNo = -1
       
       self.timer = utils.Timer(0.5)
-      self.aiStatistics = ai.AiStatistics()
-      self.efficiencyPlot = utils.EfficiencyPlot()
+      self.efficiencyPlot.show()
 
-      def onGoalReached():
-         self.aiCollection.resetPositions()
-         self.aiStatistics.recordSample(self.efficiencyPlot)
+      def updatePositionMonitors():
+         for monitor in self.positionMonitors:
+            monitor.update(self.scene)
 
-      self.trainedAI.setGoalReachedListener(lambda: onGoalReached())
-      self.timer.addToTick(lambda: self.aiStatistics.addStep())
       self.timer.addToTick(lambda: self.aiCollection.think(self.scene))
+      self.timer.addToTick(updatePositionMonitors)
 
    def __initUI__(self):
 
@@ -81,11 +77,12 @@ class Game:
       def onBrainModeChanged(modeId):
          self.efficiencyPlot.resetPlot()
          if modeId == 'test':          
+            self.timer.setPeriod(0.5)
             self.trainedAI.setLearningMode(False)
-            self.aiStatistics.setActive(False)
          else:
+            self.timer.setPeriod(0.0001)
+            self.efficiencyPlot.resetPlot()
             self.trainedAI.setLearningMode(True)
-            self.aiStatistics.setActive(True)
         
       def onEyesightChanged(modeId):
          if modeId == 'on':          
@@ -117,34 +114,14 @@ class Game:
             self.memory.load(self.savedMemory)        
 
       def onReset():
+         self.efficiencyPlot.resetPlot()
          self.memory.clear()
 
-      def onTimeMultiplierChanged(modeId):
-         if modeId == 'normal':
-            self.timer.setPeriod(0.5)
-         else:
-            self.timer.setPeriod(0.0001)
-
-      def onLoadMap(mapId):
-
-         mapDefinitionStr = self.__loadMapFile(self.mapFilePaths[mapId])
+      def onLoadMap(mapFilePath):
+         mapDefinitionStr = self.__loadMapFile(mapFilePath)
          self.scene.loadLevel(mapStr = mapDefinitionStr, walkableCellId = '_')
-
-         self.aiCollection.clear()
-         self.trainedAI.setAI(None)
-
-         miceAgents = self.scene.collectAgents('@')
-         for mouse in miceAgents:
-            mouseAI = ai.MovingAI(agent = mouse, memory = self.memory)
-            self.aiCollection.add(mouseAI, mouse)
-
-         self.aiCollection.addSense(self.eyesight)
-         self.aiCollection.addSense(self.smell)
-
-         if self.aiCollection.len() > 0:
-            self.trainedAI.setAI(self.aiCollection.getAI(0))
-
-
+         self.__buildAI__()
+         
       self.ui = view.UI([440, 10])
 
       self.uiOptions = {}
@@ -159,12 +136,6 @@ class Game:
             label = 'memory', 
             options = ['test', 'learn'], 
             action = lambda modeId: onBrainModeChanged(modeId))
-
-      self.uiOptions['time'] = self.ui.addOption(
-            key = 'F3', 
-            label = 'time',
-            options = ['normal', 'fast'],
-            action = lambda modeId: onTimeMultiplierChanged(modeId))
 
       self.ui.addSeparator()
 
@@ -207,12 +178,11 @@ class Game:
 
       self.uiOptions['map'] = self.ui.addMultichoiceOption( 
             label = 'maps',
-            numOptions = len(self.mapFilePaths),
+            numOptions = 6,
             action = lambda optionId: onLoadMap(optionId))
 
       self.input.onKeyPressed(pygame.K_F1, lambda: self.uiOptions['view'].toggle().execute())
       self.input.onKeyPressed(pygame.K_F2, lambda: self.uiOptions['memory'].toggle().execute())
-      self.input.onKeyPressed(pygame.K_F3, lambda: self.uiOptions['time'].toggle().execute())
       self.input.onKeyPressed(pygame.K_F5, lambda: self.uiOptions['save'].execute())
       self.input.onKeyPressed(pygame.K_F6, lambda: self.uiOptions['load'].execute())
       self.input.onKeyPressed(pygame.K_F7, lambda: self.uiOptions['reset'].execute())
@@ -220,9 +190,12 @@ class Game:
       self.input.onKeyPressed(pygame.K_F10, lambda: self.uiOptions['smell'].toggle().execute())
       self.input.onKeyPressed(pygame.K_F11, lambda: self.uiOptions['viewDist'].toggle().execute())
       
-      self.input.onKeyPressed(pygame.K_1, lambda: self.uiOptions['map'].execute(0))
-      self.input.onKeyPressed(pygame.K_2, lambda: self.uiOptions['map'].execute(1))
-      self.input.onKeyPressed(pygame.K_3, lambda: self.uiOptions['map'].execute(2))
+      self.input.onKeyPressed(pygame.K_1, lambda: self.uiOptions['map'].execute('resources/right_corridor.txt'))
+      self.input.onKeyPressed(pygame.K_2, lambda: self.uiOptions['map'].execute('resources/left_corridor.txt'))
+      self.input.onKeyPressed(pygame.K_3, lambda: self.uiOptions['map'].execute('resources/down_corridor.txt'))
+      self.input.onKeyPressed(pygame.K_4, lambda: self.uiOptions['map'].execute('resources/up_corridor.txt'))
+      self.input.onKeyPressed(pygame.K_5, lambda: self.uiOptions['map'].execute('resources/twisted_corridor.txt'))
+      self.input.onKeyPressed(pygame.K_6, lambda: self.uiOptions['map'].execute('resources/maze_1.txt'))
          
    def loop(self):
       while self.shouldKeepRunning:
@@ -238,6 +211,24 @@ class Game:
       with open(filePath) as f:
          content = f.read()
          return content
+
+   def __buildAI__(self):
+      self.efficiencyPlot.resetPlot()
+      self.aiCollection.clear()
+      self.positionMonitors = []
+      self.trainedAI.setAI(None)
+
+      miceAgents = self.scene.collectAgents('@')
+      for mouse in miceAgents:
+         mouseAI = ai.MovingAI(agent = mouse, memory = self.memory)
+         self.positionMonitors.append(ai.PositionMonitor(agent = mouse, goalId = 'e', teleportPos = mouse.getPos()))
+         self.aiCollection.add(mouseAI)
+
+      self.aiCollection.addSense(self.eyesight)
+      self.aiCollection.addSense(self.smell)
+
+      if self.aiCollection.len() > 0:
+         self.trainedAI.setAI(self.aiCollection.getAI(0))
 
    def __render__(self, screen):
       self.viewMode(screen)

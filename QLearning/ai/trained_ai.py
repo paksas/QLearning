@@ -4,16 +4,17 @@ import random
 
 class TrainedAI:
 
-   def __init__(self, goalId, wallId):
+   def __init__(self, goalId, wallId, statisticsPlot):
 
       self.ai = None
       self.goalId = goalId
       self.wallId = wallId
+      self.statisticsPlot = statisticsPlot
 
       self.prevState = None
       self.isLearning = False
 
-      self.goalReachedListener = None
+      self.numSteps = 0
 
       self.setRewards()
       
@@ -31,9 +32,6 @@ class TrainedAI:
       self.rewardCollision = collision
       self.rewardNothing = nothing
 
-   def setGoalReachedListener(self, listener):
-      self.goalReachedListener = listener
-
    def setLearningMode(self, enable):
       self.isLearning = enable
 
@@ -42,9 +40,14 @@ class TrainedAI:
 
    def chooseAction(self, scene, agent, brain, newState, prevAction):
       
+      self.numSteps += 1
+
       if self.prevState is not None:
-         reward = self.__calculateReward__(scene, agent)
+         reward, goalReached = self.__calculateReward__(scene, agent)
          brain.learn(self.prevState, prevAction, newState, reward)
+
+         if goalReached:
+            self.__finishEpoch__()
 
       self.prevState = newState
 
@@ -59,17 +62,18 @@ class TrainedAI:
       
       agentPos = agent.getPos()
       agentIds = scene.getAgentsIds(agentPos)
+      goalReached = False
 
       if self.goalId in agentIds:
          reward = self.rewardEatCheese
-         self.__onGoalReached__()
+         goalReached = True
       elif self.wallId in agentIds:
          reward = self.rewardCollision
       else:
          reward = self.rewardNothing
 
-      return reward
+      return reward, goalReached
 
-   def __onGoalReached__(self):
-      if self.goalReachedListener is not None:
-         self.goalReachedListener()
+   def __finishEpoch__(self):
+      self.statisticsPlot.addSample(self.numSteps)
+      self.numSteps = 0

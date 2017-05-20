@@ -7,9 +7,9 @@ class Eyesight:
       self.sensesPattern = utils.Rectangle(range, range)
       self.idToPriorityMap = {
          '_' : 0,
-         '@' : 1,
-         '#' : 2,
-         'e' : 3
+         '@' : 0,
+         'e' : 0,
+         '#' : 1,
       }
 
       self.seenPositions = []

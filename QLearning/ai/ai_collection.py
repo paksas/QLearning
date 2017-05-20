@@ -2,9 +2,10 @@ class AICollection:
 
    def __init__(self):
       self.collection = []
+      self.positionMonitors = []
 
-   def add(self, ai, agent):
-      self.collection.append((ai, agent, agent.getPos()))
+   def add(self, ai):
+      self.collection.append(ai)
 
    def clear(self):
       self.collection = []
@@ -13,30 +14,22 @@ class AICollection:
       return len(self.collection)
 
    def getAI(self, idx):
-      ai, agent, pos = self.collection[idx]
+      ai = self.collection[idx]
       return ai
 
-   def getAgent(self, idx):
-      ai, agent, pos = self.collection[idx]
-      return agent
-
    def addSense(self, sense):
-      for ai, agent, pos in self.collection:
+      for ai in self.collection:
          ai.addSense(sense)
 
    def removeSense(self, sense):
-      for ai, agent, pos in self.collection:
+      for ai in self.collection:
          ai.removeSense(sense)
 
    def forEachSense(self, cb):
-      for ai, agent, pos in self.collection:
+      for ai in self.collection:
          ai.forEachSense(cb)
 
-   def resetPositions(self):
-      for ai, agent, pos in self.collection:
-         agent.setPos(pos)
-
    def think(self, scene):
-      for ai, agent, pos in self.collection:
+      for ai in self.collection:
          ai.think(scene)
 

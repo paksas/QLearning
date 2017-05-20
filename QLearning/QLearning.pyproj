@@ -30,6 +30,9 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="ai\moving_ai.py" />
+    <Compile Include="ai\position_monitor.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="ai\smell.py">
       <SubType>Code</SubType>
     </Compile>
@@ -53,9 +56,6 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="RL\__init__.py">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="ai\ai_statistics.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="utils\efficiency_plot.py">
@@ -116,9 +116,13 @@
     <Folder Include="view\" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="resources\maze.txt" />
+    <Content Include="resources\left_corridor.txt" />
+    <Content Include="resources\maze_1.txt" />
+    <Content Include="resources\maze_2.txt" />
+    <Content Include="resources\down_corridor.txt" />
     <Content Include="resources\twisted_corridor.txt" />
-    <Content Include="resources\straight_corridor.txt" />
+    <Content Include="resources\right_corridor.txt" />
+    <Content Include="resources\up_corridor.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
   <!-- Uncomment the CoreCompile target to enable the Build command in

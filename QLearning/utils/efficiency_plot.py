@@ -16,12 +16,25 @@ class EfficiencyPlot:
 
       plt.ion() # enable interactive plotting
 
+   def show(self):
+      plt.draw()
+      plt.pause(0.05)
+
    def resetPlot(self):
 
       self.nextIdx = 0
       self.xdata = []
       self.ydata = []
       self.medianYdata = []
+
+      self.samplesLine.set_xdata(self.xdata)
+      self.samplesLine.set_ydata(self.ydata)
+
+      self.medianLine.set_xdata(self.xdata)
+      self.medianLine.set_ydata(self.medianYdata)
+
+      plt.draw()
+      plt.pause(0.05)
 
    def __calcVertRange__(self):
       vertRange = self.medianYdata[len(self.medianYdata) - 1] * 2
