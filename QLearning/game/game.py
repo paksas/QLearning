@@ -11,8 +11,8 @@ class Game:
    def __init__(self):
       self.__initDisplay__()
       self.__initKeyboardControls__()
-      self.__initUI__()
       self.__initWorld__()
+      self.__initUI__()
       self.__initAI__()
 
    def __initDisplay__(self):
@@ -26,6 +26,11 @@ class Game:
          '#': view.Resource('resources/wall.png'),
          'e': view.Resource('resources/cheese.png'),
          '@': view.Resource('resources/mouse.png')}
+
+      self.mapFilePaths = [
+         'resources/straight_corridor.txt',
+         'resources/twisted_corridor.txt',
+         'resources/maze.txt']
 
       self.scene = world.World()
 
@@ -112,7 +117,6 @@ class Game:
             self.memory.load(self.savedMemory)        
 
       def onReset():
-         self.uiOptions['memory'].setOption('test').execute()
          self.memory.clear()
 
       def onTimeMultiplierChanged(modeId):
@@ -121,8 +125,25 @@ class Game:
          else:
             self.timer.setPeriod(0.0001)
 
-      def onSetMap(mapId):
-         pass
+      def onLoadMap(mapId):
+
+         mapDefinitionStr = self.__loadMapFile(self.mapFilePaths[mapId])
+         self.scene.loadLevel(mapStr = mapDefinitionStr, walkableCellId = '_')
+
+         self.aiCollection.clear()
+         self.trainedAI.setAI(None)
+
+         miceAgents = self.scene.collectAgents('@')
+         for mouse in miceAgents:
+            mouseAI = ai.MovingAI(agent = mouse, memory = self.memory)
+            self.aiCollection.add(mouseAI, mouse)
+
+         self.aiCollection.addSense(self.eyesight)
+         self.aiCollection.addSense(self.smell)
+
+         if self.aiCollection.len() > 0:
+            self.trainedAI.setAI(self.aiCollection.getAI(0))
+
 
       self.ui = view.UI([440, 10])
 
@@ -182,6 +203,13 @@ class Game:
             options = ['near', 'far'],
             action = lambda modeId: onViewDistanceChanged(modeId))
 
+      self.ui.addSeparator()
+
+      self.uiOptions['map'] = self.ui.addMultichoiceOption( 
+            label = 'maps',
+            numOptions = len(self.mapFilePaths),
+            action = lambda optionId: onLoadMap(optionId))
+
       self.input.onKeyPressed(pygame.K_F1, lambda: self.uiOptions['view'].toggle().execute())
       self.input.onKeyPressed(pygame.K_F2, lambda: self.uiOptions['memory'].toggle().execute())
       self.input.onKeyPressed(pygame.K_F3, lambda: self.uiOptions['time'].toggle().execute())
@@ -191,25 +219,11 @@ class Game:
       self.input.onKeyPressed(pygame.K_F9, lambda: self.uiOptions['eyesight'].toggle().execute())
       self.input.onKeyPressed(pygame.K_F10, lambda: self.uiOptions['smell'].toggle().execute())
       self.input.onKeyPressed(pygame.K_F11, lambda: self.uiOptions['viewDist'].toggle().execute())
+      
+      self.input.onKeyPressed(pygame.K_1, lambda: self.uiOptions['map'].execute(0))
+      self.input.onKeyPressed(pygame.K_2, lambda: self.uiOptions['map'].execute(1))
+      self.input.onKeyPressed(pygame.K_3, lambda: self.uiOptions['map'].execute(2))
          
-   def loadMap(self, mapDefinitionStr):
-
-      self.scene.loadLevel(mapStr = mapDefinitionStr, walkableCellId = '_')
-
-      self.aiCollection.clear()
-      self.trainedAI.setAI(None)
-
-      miceAgents = self.scene.collectAgents('@')
-      for mouse in miceAgents:
-         mouseAI = ai.MovingAI(agent = mouse, memory = self.memory)
-         self.aiCollection.add(mouseAI, mouse)
-
-      self.aiCollection.addSense(self.eyesight)
-      self.aiCollection.addSense(self.smell)
-
-      if self.aiCollection.len() > 0:
-         self.trainedAI.setAI(self.aiCollection.getAI(0))
-
    def loop(self):
       while self.shouldKeepRunning:
 
@@ -219,6 +233,11 @@ class Game:
          screen = self.display.renderBegin()
          self.__render__(screen)
          self.display.renderEnd()
+
+   def __loadMapFile(self, filePath):
+      with open(filePath) as f:
+         content = f.read()
+         return content
 
    def __render__(self, screen):
       self.viewMode(screen)

@@ -9,6 +9,8 @@ class World:
    def __init__(self):
 
       self.unoccupiedSpaceTracer = utils.RectangleTracer()
+      self.cells = []
+      self.agents = []
 
    def loadLevel(self, mapStr, walkableCellId = '_'):
 
