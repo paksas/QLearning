@@ -43,7 +43,7 @@ class Game:
       self.input.onQuit(lambda: toggleKeepRunning())
 
    def __initAI__(self):    
-      self.efficiencyPlot = utils.EfficiencyPlot()
+      self.efficiencyPlot = view.Plot()
 
       self.aiCollection = ai.AICollection()
       self.positionMonitors = []

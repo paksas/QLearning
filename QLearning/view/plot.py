@@ -1,15 +1,18 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
-class EfficiencyPlot:
+class Plot:
 
    def __init__(self):
 
       self.axes = plt.gca()
       self.axes.set_xlim(0, 100)
       self.axes.set_ylim(0, 40)
-
-      self.resetPlot()
+      
+      self.nextIdx = 0
+      self.xdata = []
+      self.ydata = []
+      self.medianYdata = []
 
       self.samplesLine, = self.axes.plot(self.xdata, self.ydata, 'r-')
       self.medianLine, = self.axes.plot(self.xdata, self.medianYdata, 'b-')

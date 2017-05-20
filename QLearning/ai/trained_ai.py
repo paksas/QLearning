@@ -51,7 +51,7 @@ class TrainedAI:
 
       self.prevState = newState
 
-      if random.random() < 0.1:
+      if random.random() < 0.3:
          newAction = brain.chooseRandomAction()
       else:
          newAction = brain.chooseAction(newState)

@@ -58,7 +58,7 @@
     <Compile Include="RL\__init__.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="utils\efficiency_plot.py">
+    <Compile Include="view\plot.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="utils\math.py">
