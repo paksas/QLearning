@@ -35,7 +35,7 @@ class World:
             resourceId = parsedLine[x]
             if resourceId != '' and resourceId != ' ' and resourceId != '\n':
                agent = Agent(resourceId, np.array([x, y]))
-               self.cells[x][y].addAgent(agent)
+               self.addAgent(agent)
 
       return self
 
@@ -77,6 +77,9 @@ class World:
       cell.forEachAgent(lambda agent: agentIds.append(agent.getId()))
       
       return agentIds
+
+   def collectAgents(self, agentId):
+      return list(filter(lambda agent: agent.getId() == agentId, self.agents))
 
    def isPositionOccupied(self, localPos):
       validPos = self.wrapCoordinates(localPos)
@@ -142,7 +145,6 @@ class WorldCell:
 
    def hasAnyAgents(self):
       return len(self.agents) > 0
-
 
 class WorldRenderer:
 

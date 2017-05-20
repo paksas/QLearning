@@ -1,38 +1,25 @@
 import random
-import copy
 
 class QLearn:
 
-   def __init__(self, numActions, alpha=0.1, gamma=0.9):
+   def __init__(self, numActions, memory):
 
-      self.q = {}
+      self.memory = memory
 
       self.actions = range(numActions)
-      self.alpha = alpha
-      self.gamma = gamma
 
-   def reset(self):
-      self.q = {}
+   def learn(self, prevState, prevAction, newState, reward, alpha=0.1, gamma=0.9):
 
-   def save(self):
-      savedBrain = copy.deepcopy(self.q)
-      return savedBrain
+      maxqnew = max([self.memory.get(newState, a) for a in self.actions])
+      self.memory.learn(prevState, prevAction, reward, reward + gamma*maxqnew, alpha)
 
-   def load(self, savedBrain):
-      self.q = copy.deepcopy(savedBrain)
+   def chooseRandomAction(self):
+      action = random.choice(self.actions)
+      return action
 
-   def learn(self, prevState, prevAction, newState, reward):
+   def chooseAction(self, state):
 
-      maxqnew = max([self.__getQ__(newState, a) for a in self.actions])
-      self.__learnQ__(prevState, prevAction, reward, reward + self.gamma*maxqnew)
-
-   def chooseAction(self, state, epsilon):
-
-      if random.random() < epsilon:
-         action = random.choice(self.actions)
-         return action
-
-      q = [self.__getQ__(state, a) for a in self.actions]
+      q = [self.memory.get(state, a) for a in self.actions]
       maxQ = max(q)
       count = q.count(maxQ)
       if count > 1:
@@ -43,13 +30,3 @@ class QLearn:
 
       action = self.actions[i]
       return action
-
-   def __getQ__(self, state, action):
-      return self.q.get((state, action), 0.0)
-
-   def __learnQ__(self, state, action, reward, value):
-      oldv = self.q.get((state, action), None)
-      if oldv is None:
-         self.q[(state, action)] = reward
-      else:
-         self.q[(state, action)] = oldv + self.alpha * (value - oldv)

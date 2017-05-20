@@ -3,11 +3,9 @@ import numpy as np
 
 class MovingAI:
 
-   def __init__(self, agent, goalId, wallId):
+   def __init__(self, agent, memory):
 
       self.agent = agent
-      self.goalId = goalId
-      self.wallId = wallId
 
       self.directions = [
          np.array([1, -1]), 
@@ -21,14 +19,14 @@ class MovingAI:
          np.array([0, 1])]
 
       self.senses = []
-      self.setRewards()
 
-      self.ai = RL.QLearn(numActions=len(self.directions), alpha=0.1, gamma=0.9)
-      self.prevState = None
-      self.prevAction = None
-      self.isLearning = False
-      self.goalReachedListener = None
+      self.brain = RL.QLearn(numActions = len(self.directions), memory = memory)
+      self.scheduledAction = None
+      self.learningModule = None
       
+   def installLearningModule(self, module):
+      self.learningModule = module
+
    def addSense(self, sense):
       self.senses.append(sense)
 
@@ -39,61 +37,17 @@ class MovingAI:
       for sense in self.senses:
          cb(sense)
 
-   def setRewards(self, eatingCheese=50, collision =-25, nothing = -1):
-      self.rewardEatCheese = eatingCheese
-      self.rewardCollision = collision
-      self.rewardNothing = nothing
-
-   def setGoalReachedListener(self, listener):
-      self.goalReachedListener = listener
-
-   def reset(self):
-      self.ai.reset()
-      self.prevState = None
-      self.prevAction = None
-
-   def setLearningMode(self, enable):
-      self.isLearning = enable
-
    def think(self, scene):
 
-      if self.prevAction is not None:
-         self.__goInDirection__(self.prevAction, scene)
+      if self.scheduledAction is not None:
+         self.__goInDirection__(self.scheduledAction, scene)
 
-      currState = self.__calculateState__(scene)
-      reward = self.__calculateReward__(scene)
-      
-      if self.isLearning:
-         if self.prevState is not None:
-            self.ai.learn(self.prevState, self.prevAction, currState, reward)
+      state = self.__calculateState__(scene)
 
-         action = self.ai.chooseAction(currState, epsilon = 0.1)
+      if self.learningModule is not None and self.learningModule.isActive():
+         self.scheduledAction = self.learningModule.chooseAction(scene, self.agent, self.brain, state, self.scheduledAction)
       else:
-         action = self.ai.chooseAction(currState, epsilon = 0.0)
-      
-      self.prevState = currState
-      self.prevAction = action
-
-   def save(self):
-      return self.ai.save()
-
-   def load(self, savedBrain):
-      self.ai.load(savedBrain)
-
-   def __calculateReward__(self, scene):
-      
-      agentPos = self.agent.getPos()
-      agentIds = scene.getAgentsIds(agentPos)
-
-      if self.goalId in agentIds:
-         reward = self.rewardEatCheese
-         self.__onGoalReached__()
-      elif self.wallId in agentIds:
-         reward = self.rewardCollision
-      else:
-         reward = self.rewardNothing
-
-      return reward
+         self.scheduledAction = self.brain.chooseAction(state)      
 
    def __calculateState__(self, scene):
       agentPos = self.agent.getPos()
@@ -104,10 +58,6 @@ class MovingAI:
          state += senseResult
 
       return tuple(state)
-
-   def __onGoalReached__(self):
-      if self.goalReachedListener is not None:
-         self.goalReachedListener()
 
    def __goInDirection__(self, directionIdx, scene):
       newPos = self.agent.getPos() + self.directions[directionIdx]

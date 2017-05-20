@@ -23,11 +23,17 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="ai\ai_collection.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="ai\eyesight.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="ai\moving_ai.py" />
     <Compile Include="ai\smell.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ai\trained_ai.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="ai\__init__.py" />
@@ -40,13 +46,16 @@
     <Compile Include="game\__init__.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="RL\qmemory.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="RL\qlearn.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="RL\__init__.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="utils\ai_statistics.py">
+    <Compile Include="ai\ai_statistics.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="utils\efficiency_plot.py">

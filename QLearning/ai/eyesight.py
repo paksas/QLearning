@@ -30,6 +30,8 @@ class Eyesight:
          if len(dynamicIds) > 0:
             selectedState = reduce((lambda x,y: max(x, y)), map(lambda id: self.idToPriorityMap[id], dynamicIds))
             stateVec.append(selectedState)
+         else:
+            stateVec.append(0)
 
       return stateVec     
             

@@ -2,6 +2,7 @@ import view
 import world
 import utils
 import ai
+import RL
 import numpy as np
 import pygame
 
@@ -12,16 +13,10 @@ class Game:
       self.__initKeyboardControls__()
       self.__initUI__()
       self.__initWorld__()
-      self.__initUtils__()
       self.__initAI__()
 
    def __initDisplay__(self):
       self.display = view.Display()
-
-      self.gameModeLabel = [
-         self.display.buildLabel("off-line"),
-         self.display.buildLabel("training"),
-         self.display.buildLabel("testing")]
 
       self.viewMode = self.__render_player_view__
 
@@ -47,20 +42,28 @@ class Game:
 
       self.input.onQuit(lambda: toggleKeepRunning())
 
-   def __initUtils__(self):
-      self.timer = utils.Timer(0.5)
-      self.efficiencyPlot = utils.EfficiencyPlot()
+   def __initAI__(self):      
+      self.aiCollection = ai.AICollection()
+      self.trainedAI = ai.TrainedAI(goalId = 'e', wallId = '#')      
 
-   def __initAI__(self):
-      self.gameMode = 0
-      self.mouse = None
-      self.mouseAI = None
       self.eyesight = ai.Eyesight(1)
       self.smell = ai.Smell('e')
-      self.cheese = None
-      self.aiStatistics = None
-      self.savedBrain = None
-      self.savedBrainNo = -1
+
+      self.memory = RL.QMemory()
+      self.savedMemory = None
+      self.savedMemoryNo = -1
+      
+      self.timer = utils.Timer(0.5)
+      self.aiStatistics = ai.AiStatistics()
+      self.efficiencyPlot = utils.EfficiencyPlot()
+
+      def onGoalReached():
+         self.aiCollection.resetPositions()
+         self.aiStatistics.recordSample(self.efficiencyPlot)
+
+      self.trainedAI.setGoalReachedListener(lambda: onGoalReached())
+      self.timer.addToTick(lambda: self.aiStatistics.addStep())
+      self.timer.addToTick(lambda: self.aiCollection.think(self.scene))
 
    def __initUI__(self):
 
@@ -71,16 +74,19 @@ class Game:
             self.viewMode = self.__render_ai_view__
 
       def onBrainModeChanged(modeId):
+         self.efficiencyPlot.resetPlot()
          if modeId == 'test':          
-            self.mouseAI.setLearningMode(False)
+            self.trainedAI.setLearningMode(False)
+            self.aiStatistics.setActive(False)
          else:
-            self.mouseAI.setLearningMode(True)
+            self.trainedAI.setLearningMode(True)
+            self.aiStatistics.setActive(True)
         
       def onEyesightChanged(modeId):
          if modeId == 'on':          
-            self.mouseAI.addSense(self.eyesight)
+            self.aiCollection.addSense(self.eyesight)
          else:
-            self.mouseAI.removeSense(self.eyesight)
+            self.aiCollection.removeSense(self.eyesight)
 
       def onViewDistanceChanged(modeId):
          if modeId == 'near':          
@@ -90,24 +96,24 @@ class Game:
 
       def onSmellChanged(modeId):
          if modeId == 'on':       
-            self.mouseAI.addSense(self.smell)
+            self.aiCollection.addSense(self.smell)
          else:
-            self.mouseAI.removeSense(self.smell)
+            self.aiCollection.removeSense(self.smell)
 
       def onSave():
-         self.savedBrainNo += 1
-         optionStr = 'save_{0}'.format(self.savedBrainNo)
+         self.savedMemoryNo += 1
+         optionStr = 'save_{0}'.format(self.savedMemoryNo)
          self.uiOptions['save'].setOptions([optionStr])
-         self.savedBrain = self.mouseAI.save()
+         self.savedMemory = self.memory.save()
 
       def onLoad():
-         self.uiOptions['brain'].setOption('test').execute()
-         if self.savedBrain is not None:
-            self.mouseAI.load(self.savedBrain)          
+         self.uiOptions['memory'].setOption('test').execute()
+         if self.savedMemory is not None:
+            self.memory.load(self.savedMemory)        
 
       def onReset():
-         self.uiOptions['brain'].setOption('test').execute()
-         self.mouseAI.reset()
+         self.uiOptions['memory'].setOption('test').execute()
+         self.memory.clear()
 
       def onTimeMultiplierChanged(modeId):
          if modeId == 'normal':
@@ -127,9 +133,9 @@ class Game:
             options = ['player', 'ai'], 
             action = lambda modeId: onViewModeChanged(modeId))
 
-      self.uiOptions['brain'] = self.ui.addOption(
+      self.uiOptions['memory'] = self.ui.addOption(
             key = 'F2', 
-            label = 'brain', 
+            label = 'memory', 
             options = ['test', 'learn'], 
             action = lambda modeId: onBrainModeChanged(modeId))
 
@@ -156,19 +162,18 @@ class Game:
             label = 'reset',
             action = lambda _: onReset())
 
-
       self.ui.addSeparator()
 
       self.uiOptions['eyesight'] = self.ui.addOption(
             key = 'F9', 
             label = 'eyes', 
-            options = ['off', 'on'], 
+            options = ['on', 'off'], 
             action = lambda modeId: onEyesightChanged(modeId))
 
       self.uiOptions['smell'] = self.ui.addOption(
             key = 'F10', 
             label = 'smell', 
-            options = ['off', 'on'], 
+            options = ['on', 'off'], 
             action = lambda modeId: onSmellChanged(modeId))
 
       self.uiOptions['viewDist'] = self.ui.addOption(
@@ -178,7 +183,7 @@ class Game:
             action = lambda modeId: onViewDistanceChanged(modeId))
 
       self.input.onKeyPressed(pygame.K_F1, lambda: self.uiOptions['view'].toggle().execute())
-      self.input.onKeyPressed(pygame.K_F2, lambda: self.uiOptions['brain'].toggle().execute())
+      self.input.onKeyPressed(pygame.K_F2, lambda: self.uiOptions['memory'].toggle().execute())
       self.input.onKeyPressed(pygame.K_F3, lambda: self.uiOptions['time'].toggle().execute())
       self.input.onKeyPressed(pygame.K_F5, lambda: self.uiOptions['save'].execute())
       self.input.onKeyPressed(pygame.K_F6, lambda: self.uiOptions['load'].execute())
@@ -188,38 +193,24 @@ class Game:
       self.input.onKeyPressed(pygame.K_F11, lambda: self.uiOptions['viewDist'].toggle().execute())
          
    def loadMap(self, mapDefinitionStr):
+
       self.scene.loadLevel(mapStr = mapDefinitionStr, walkableCellId = '_')
 
-   def addMouse(self, pos):
-      if self.mouse is not None:
-         return self.mouseAI
+      self.aiCollection.clear()
+      self.trainedAI.setAI(None)
 
-      self.mouseStartPos = np.array(pos)
-      self.mouse = world.Agent('@', self.mouseStartPos)
-      self.scene.addAgent(self.mouse);
-      self.timer.addToTick(lambda: self.mouseAI.think(self.scene))
+      miceAgents = self.scene.collectAgents('@')
+      for mouse in miceAgents:
+         mouseAI = ai.MovingAI(agent = mouse, memory = self.memory)
+         self.aiCollection.add(mouseAI, mouse)
 
-      self.mouseAI = ai.MovingAI(agent = self.mouse, goalId = 'e', wallId = '#')
-      self.mouseAI.setGoalReachedListener(lambda: self.__onGoalReached__())
-      self.mouseAI.setLearningMode(False)
+      self.aiCollection.addSense(self.eyesight)
+      self.aiCollection.addSense(self.smell)
 
-      self.aiStatistics = utils.AiStatistics(self.mouse)
-      self.timer.addToTick(lambda: self.aiStatistics.addStep())
-
-      return self.mouseAI
-
-   def addCheese(self, pos):
-      if self.cheese is not None:
-         return self.cheese
-
-      self.cheeseStartPos = np.array(pos)
-      self.cheese = world.Agent('e', self.cheeseStartPos)
-      self.scene.addAgent(self.cheese);
-
-      return self.cheese
+      if self.aiCollection.len() > 0:
+         self.trainedAI.setAI(self.aiCollection.getAI(0))
 
    def loop(self):
-
       while self.shouldKeepRunning:
 
          self.input.handleEvents()
@@ -227,19 +218,7 @@ class Game:
       
          screen = self.display.renderBegin()
          self.__render__(screen)
-         screen.blit(self.gameModeLabel[self.gameMode], (500, 460))
          self.display.renderEnd()
-
-   def __resetScene__(self):
-      if self.mouse is not None:
-         self.mouse.setPos(self.mouseStartPos)
-
-      if self.cheese is not None:
-         self.cheese.setPos(self.cheeseStartPos)
-
-   def __onGoalReached__(self):
-      self.__resetScene__()
-      self.aiStatistics.recordSample(self.efficiencyPlot)
 
    def __render__(self, screen):
       self.viewMode(screen)
@@ -255,15 +234,12 @@ class Game:
 
    def __render_ai_view__(self, screen):
 
-      if self.mouse is None:
-         return
-
       def __render_cell__(pos):
          correspondingCell = self.scene.getCellAtPos(pos)
          self.worldRenderer.renderCell(correspondingCell)
 
       self.worldRenderer.clear()
       
-      self.mouseAI.forEachSense(lambda sense: sense.forEachScannedPos(lambda pos: __render_cell__(pos) ) )
+      self.aiCollection.forEachSense(lambda sense: sense.forEachScannedPos(lambda pos: __render_cell__(pos) ) )
 
       self.worldRenderer.present(screen)

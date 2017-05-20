@@ -1,1 +1,2 @@
-from .qlearn import QLearn
+from .qlearn import *
+from .qmemory import *
